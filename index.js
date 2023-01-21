@@ -25,7 +25,8 @@ const getWeatherDataPromise = (url) => {
                 let result = {
                     description: description,
                     city: city,
-                    temp: temp
+                    temp: temp,
+                    error: null
                 }
                 resolve(result)
             })
@@ -35,18 +36,21 @@ const getWeatherDataPromise = (url) => {
     })
 }
 
-app.all('/', function (req, res){
+app.all('/', function (req, res) {
     let city
-    if(req.method == 'GET'){
-        city = 'Tartu'
-    }
-    if(req.method == 'POST'){
-        city = req.body.cityname
+    if (req.method === 'POST' && req.body.cityname) {
+        city = req.body.cityname;
+    } else {
+        city = 'Tartu';
     }
     let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`
-    getWeatherDataPromise(url).then(data => {
-        res.render('index', data)
-    })
+    getWeatherDataPromise(url)
+        .then(data => {
+            res.render('index', data)
+        })
+        .catch(error => {
+            res.render('index', {error: 'Problem-with-getting data, try again'})
+        })
 })
 
 app.listen(3000)
